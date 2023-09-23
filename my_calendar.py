@@ -66,17 +66,3 @@ calendar = calendar(events=read_booking(), options=calendar_options)
 
 
 st.write(calendar)
-
-
-
-
-
-# calendar_events = [
-    # {
-    #     "title": "Event 1",
-    #     "start": "2023-09-17T08:30:00",
-    #     "end": "2023-09-17T10:30:00",
-    #     # "resourceId": "a",
-    # },
-
-# ]
