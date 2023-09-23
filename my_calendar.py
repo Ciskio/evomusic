@@ -1,68 +1,82 @@
 import streamlit as st
-import tkinter as tk
+from streamlit_calendar import calendar
 
-import datetime
-import calendar
+def read_booking():
+    with open("bookings.txt", "r") as my_bookings:
+        bookings = my_bookings.read().split("\n\n")[:-1]
+    dict_values = [value.split(" ") for value in bookings]
+    dict_keys = ["title", "start", "end"]
+    all_bookings = []
+    for i in dict_values:
+        booking = []
+        counter = 0
+        for j in i:
+            if j[:-1] not in dict_keys:
+                booking.append((dict_keys[counter], j[:-1]))
+                counter += 1
+        book_dict = dict(booking)
+        all_bookings.append(book_dict)
 
-class WeeklyCalendar:
-    def __init__(self, start_date):
-        self.start_date = start_date
-        self.days = [datetime.date(start_date.year, start_date.month, start_date.day + i) for i in range(7)]
-        self.timeslots = {day: [] for day in self.days}
+    return all_bookings
 
-    def book_timeslot(self, day, start_time, end_time):
-        self.timeslots[day].append((start_time, end_time))
 
-    def show(self):
-        print('Weekly Calendar')
-        print('Start Date:', self.start_date)
-        for day in self.days:
-            print(f'{day.strftime("%A")}:')
-            for timeslot in self.timeslots[day]:
-                print(f'{timeslot[0]:%H:%M} - {timeslot[1]:%H:%M}')
+calendar_options = {
+    "headerToolbar": {
+        "left": "today prev,next",
+        "center": "title",
+        "right": "timeGridDay,timeGridWeek",
+    },
+    "dayHeaderFormat": {
+      "weekday": "short",
+       "day": "numeric", 
+       "month": "numeric", 
+       "omitCommas": True,
+    },
+    "slotMinTime": "06:00:00",
+    "slotMaxTime": "21:00:00",
+    "initialView": "timeGridWeek",
+    "allDaySlot": False,
+    "weekends": False,
+}
 
-class CalendarGUI:
-    def __init__(self, master):
-        self.master = master
-        self.frame = tk.Frame(master)
-        self.frame.pack()
 
-        # Create a label to display the calendar month and year.
-        self.month_year_label = tk.Label(self.frame, text='September 2023')
-        self.month_year_label.grid(row=0, column=0, columnspan=7)
+# books = read_booking()
 
-        # Create a grid to display the days of the week.
-        self.day_labels = []
-        for i in range(7):
-            day_label = tk.Label(self.frame, text=datetime.date.today().weekday() + i)
-            day_label.grid(row=1, column=i)
-            self.day_labels.append(day_label)
+calendar_events = [
+    {
+        "title": "Francesco",
+        "start": "2023-09-18T08:30:00",
+        "end": "2023-09-18T10:30:00",
+    },
+    {
+        "title": "Evoband1",
+        "start": "2023-09-18T17:30:00",
+        "end": "2023-09-18T19:30:00",
+    },
+]
 
-        # Create a grid to display the timeslots.
-        self.timeslot_buttons = {}
-        for day in range(7):
-            for hour in range(24):
-                for minute in range(0, 60, 30):
-                    time = datetime.time(hour, minute)
-                    timeslot_button = tk.Button(self.frame, text=time.strftime('%H:%M'), command=lambda: self.book_timeslot(day, time))
-                    timeslot_button.grid(row=2 + hour, column=day)
-                    self.timeslot_buttons[(day, time)] = timeslot_button
+calendar = calendar(events=read_booking(), options=calendar_options)
 
-    def book_timeslot(self, day, time):
-        # Book the timeslot.
-        pass
+# if st.button("Add event"):
 
-    def update(self, calendar):
-        # Update the GUI to display the given calendar.
-        pass
+  # Get the event details from the user.
+#   event_title = st.text_input("Event title:")
+#   event_start = st.date_input("Event start:")
+#   event_end = st.date_input("Event end:")
 
-st.title('Calendar')
 
-calendar_gui = CalendarGUI(tk.Tk())
-calendar = WeeklyCalendar(datetime.date.today())
+st.write(calendar)
 
-# Update the GUI to display the calendar.
-calendar_gui.update(calendar)
 
-# Display the GUI in the Streamlit app.
-st.write(calendar_gui.frame)
+
+
+
+# calendar_events = [
+    # {
+    #     "title": "Event 1",
+    #     "start": "2023-09-17T08:30:00",
+    #     "end": "2023-09-17T10:30:00",
+    #     # "resourceId": "a",
+    # },
+
+# ]
