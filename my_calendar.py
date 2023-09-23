@@ -40,29 +40,15 @@ calendar_options = {
 }
 
 
-# books = read_booking()
-
-calendar_events = [
-    {
-        "title": "Francesco",
-        "start": "2023-09-18T08:30:00",
-        "end": "2023-09-18T10:30:00",
-    },
-    {
-        "title": "Evoband1",
-        "start": "2023-09-18T17:30:00",
-        "end": "2023-09-18T19:30:00",
-    },
-]
-
 calendar = calendar(events=read_booking(), options=calendar_options)
+st.write(calendar)
 
-# if st.button("Add event"):
+
+if st.button("Add event"):
 
   # Get the event details from the user.
-#   event_title = st.text_input("Event title:")
-#   event_start = st.date_input("Event start:")
-#   event_end = st.date_input("Event end:")
+    event_title = st.text_input("Your name or band name:")
+    event_day = st.date_input("Day to select:")
+    event_start = st.time_input("Hour to start:")
+    event_end = st.time_input("Hour to end:")
 
-
-st.write(calendar)
