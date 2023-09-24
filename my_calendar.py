@@ -39,12 +39,6 @@ def book_slot(slot_title, slot_day, slot_start, slot_end, df):
     df.to_csv(csv_url)
 
 
-
-# Print results.
-# for row in df.itertuples():
-#     st.write(f"{row.Name} has a :{row.Year}:")
-
-
 calendar_options = {
     "headerToolbar": {
         "left": "today prev,next",
