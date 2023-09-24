@@ -1,23 +1,48 @@
+import pandas as pd
+
 import streamlit as st
 from streamlit_calendar import calendar
 
-def read_booking():
-    with open("bookings.txt", "r") as my_bookings:
-        bookings = my_bookings.read().split("\n\n")[:-1]
-    dict_values = [value.split(" ") for value in bookings]
-    dict_keys = ["title", "start", "end"]
+def read_booking(df):
+
     all_bookings = []
-    for i in dict_values:
-        booking = []
-        counter = 0
-        for j in i:
-            if j[:-1] not in dict_keys:
-                booking.append((dict_keys[counter], j[:-1]))
-                counter += 1
-        book_dict = dict(booking)
+    for row in df.itertuples():
+
+        book_dict = {
+            "title": row.Name,
+            "start": row.Start,
+            "end":   row.End,
+            }
         all_bookings.append(book_dict)
 
     return all_bookings
+
+
+# Read in data from the Google Sheet.
+# Uses st.cache_data to only rerun when the query changes or after 10 min.
+@st.cache_data(ttl=60)
+def load_data(sheets_url):
+    csv_url = sheets_url.replace("/edit#gid=", "/export?format=csv&gid=")
+    return pd.read_csv(csv_url)
+
+
+def book_slot(slot_title, slot_day, slot_start, slot_end, df):
+    slot_book = [
+        slot_title,
+        f"{slot_day}T{slot_start}",
+        f"{slot_day}T{slot_end}"
+    ]
+    df.loc[len(df)] = slot_book
+    st.write(df)
+    csv_url = st.secrets["public_gsheets_url"].replace("/edit#gid=", "/export?format=csv&gid=")
+    st.write(csv_url)
+    df.to_csv(csv_url)
+
+
+
+# Print results.
+# for row in df.itertuples():
+#     st.write(f"{row.Name} has a :{row.Year}:")
 
 
 calendar_options = {
@@ -40,15 +65,29 @@ calendar_options = {
 }
 
 
-calendar = calendar(events=read_booking(), options=calendar_options)
+df = load_data(st.secrets["public_gsheets_url"])
+# for row in df.itertuples():
+#     st.write(f"{row.Name} has a :{row.Start}:")
+
+calendar = calendar(events=read_booking(df), options=calendar_options)
 st.write(calendar)
 
 
-if st.button("Add event"):
+# if st.button("Add event"):
+with st.form(key="new_book"):
+    st.write("Book a slot")
 
   # Get the event details from the user.
-    event_title = st.text_input("Your name or band name:")
-    event_day = st.date_input("Day to select:")
-    event_start = st.time_input("Hour to start:")
-    event_end = st.time_input("Hour to end:")
+    slot_title = st.text_input("Your name or band name:")
+    slot_day = st.date_input("Day to select:")
+    slot_start = st.time_input("Hour to start:")
+    slot_end = st.time_input("Hour to end:")
+    st.write(f"title: {slot_title}")
+    st.write(f"day: {slot_day}")
+    st.write(f"start: {slot_start}")
+    st.write(f"end: {slot_end}")
 
+    booking = st.form_submit_button("Book")
+
+if booking:
+    book_slot(slot_title, slot_day, slot_start, slot_end, df)
