@@ -25,7 +25,7 @@ def read_booking(df):
 def load_data():
     link = "https://docs.google.com/spreadsheets/d/1wQ4fVvqXCGZKt_WeJ5uAfGakNLVAiO_Qs2Km1PPXvpk/edit#gid=0"
     conn = st.experimental_connection("gsheets", type=GSheetsConnection)
-    data = conn.read(spreadsheet="Evomusic", worksheet="Bookings")
+    data = conn.read(spreadsheet=link, worksheet="Bookings")
     return data
 
 
