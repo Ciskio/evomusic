@@ -117,8 +117,9 @@ if booking:
     booking_in_the_past = check_past(slot_day)
 
     # TODO check that there are no overlapping bookings
+    # TODO automatically remove old bookings
     if not booking_in_the_past:
-        df = clean_db_old(df)
+        # df = clean_db_old(df)
         book_slot(slot_title, slot_day, slot_start, slot_end, df, conn)
         
 
