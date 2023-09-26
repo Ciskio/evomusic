@@ -1,2 +1,2 @@
 streamlit_calendar
-streamlit_gsheets
+pip install streamlit git+https://github.com/streamlit/gsheets-connection
