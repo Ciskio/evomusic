@@ -2,6 +2,7 @@ import pandas as pd
 
 import streamlit as st
 from streamlit_calendar import calendar
+from streamlit_gsheets import GSheetsConnection
 
 def read_booking(df):
 
@@ -22,8 +23,9 @@ def read_booking(df):
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
 @st.cache_data(ttl=60)
 def load_data(sheets_url):
-    csv_url = sheets_url.replace("/edit#gid=", "/export?format=csv&gid=")
-    return pd.read_csv(csv_url)
+    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+    data = conn.read(spreadsheet="Evomusic")
+    return data
 
 
 def book_slot(slot_title, slot_day, slot_start, slot_end, df):
