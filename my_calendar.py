@@ -24,7 +24,7 @@ def read_booking(df):
 @st.cache_data(ttl=60)
 def load_data():
     conn = st.experimental_connection("gsheets", type=GSheetsConnection)
-    data = conn.read(spreadsheet="Evomusic", worksheet='Bookings')
+    data = conn.read(spreadsheet="Evomusic", worksheet="Bookings")
     return data
 
 
