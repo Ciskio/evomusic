@@ -1,8 +1,28 @@
 import pandas as pd
+import datetime
 
 import streamlit as st
 from streamlit_calendar import calendar
 from streamlit_gsheets import GSheetsConnection
+
+TODAY = datetime.date.today()
+
+# Read in data from the Google Sheet.
+# Uses st.cache_data to only rerun when the query changes or after 10 min.
+@st.cache_data(ttl=60)
+def load_data():
+    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
+    data = conn.read(worksheet="Bookings")
+    names = data["Name"].dropna().to_list()
+    starts = data["Start"].dropna().to_list()
+    ends = data["End"].dropna().to_list()
+    values = {"Name": names, "Start": starts, "End": ends}
+    df = pd.DataFrame(values)
+    return df, conn
+
+def clean_db_old(df):
+    df["End"] = pd.to_datetim(df["End"])
+    new_df = df[~(df['End'] > TODAY)]
 
 def read_booking(df):
 
@@ -19,20 +39,6 @@ def read_booking(df):
     return all_bookings
 
 
-# Read in data from the Google Sheet.
-# Uses st.cache_data to only rerun when the query changes or after 10 min.
-@st.cache_data(ttl=60)
-def load_data():
-    conn = st.experimental_connection("gsheets", type=GSheetsConnection)
-    data = conn.read(worksheet="Bookings")
-    names = data["Name"].dropna().to_list()
-    starts = data["Start"].dropna().to_list()
-    ends = data["End"].dropna().to_list()
-    values = {"Name": names, "Start": starts, "End": ends}
-    df = pd.DataFrame(values)
-    return df, conn
-
-
 def book_slot(slot_title, slot_day, slot_start, slot_end, df, conn):
     slot_book = [
         slot_title,
@@ -45,10 +51,27 @@ def book_slot(slot_title, slot_day, slot_start, slot_end, df, conn):
     st.cache_data.clear()
     st.experimental_rerun()
 
-    # csv_url = st.secrets["public_gsheets_url"].replace("/edit#gid=", "/export?format=csv&gid=")
-    # st.write(csv_url)
-    #df.to_csv(st.secrets["public_gsheets_url"])
 
+def check_past(input_day):
+    """Check if today is > than the input day
+
+    :param input_day: day to test
+    :return: True if the tested day is in the past, False otherwise
+    """
+    # passed_day = datetime.datetime.strptime(f"{input_day[:4]}-{input_day[5:7]}-{input_day[8:]}", "%Y/%m/%d").date()
+
+    if TODAY > input_day:
+        return True
+    return False
+
+def check_overlap(first_inter,second_inter):
+    for f,s in ((first_inter,second_inter), (second_inter,first_inter)):
+        #will check both ways
+        for time in (f["starting_time"], f["ending_time"]):
+            if s["starting_time"] < time < s["ending_time"]:
+                return True
+    else:
+        return False
 
 calendar_options = {
     "headerToolbar": {
@@ -71,16 +94,11 @@ calendar_options = {
 
 
 df, conn = load_data()
-# for row in df.itertuples():
-#     st.write(f"{row.Name} has a :{row.Start}:")
-st.write(df)
-# calendar = calendar(options=calendar_options)
 calendar = calendar(events=read_booking(df), options=calendar_options)
 
 st.write(calendar)
 
 
-# if st.button("Add event"):
 with st.form(key="new_book"):
     st.write("Book a slot")
 
@@ -89,12 +107,17 @@ with st.form(key="new_book"):
     slot_day = st.date_input("Day to select:")
     slot_start = st.time_input("Hour to start:")
     slot_end = st.time_input("Hour to end:")
-    st.write(f"title: {slot_title}")
-    st.write(f"day: {slot_day}")
-    st.write(f"start: {slot_start}")
-    st.write(f"end: {slot_end}")
 
     booking = st.form_submit_button("Book")
 
 if booking:
-    book_slot(slot_title, slot_day, slot_start, slot_end, df, conn)
+    booking_in_the_past = check_past(slot_day)
+
+    # TODO check that there are no overlapping bookings
+    if not booking_in_the_past:
+        clean_db_old(df)
+        book_slot(slot_title, slot_day, slot_start, slot_end, df, conn)
+        
+
+    else:
+        st.write("You can't book in the past")
