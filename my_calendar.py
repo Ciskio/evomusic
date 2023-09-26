@@ -23,13 +23,17 @@ def read_booking(df):
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
 @st.cache_data(ttl=60)
 def load_data():
-    link = "https://docs.google.com/spreadsheets/d/1wQ4fVvqXCGZKt_WeJ5uAfGakNLVAiO_Qs2Km1PPXvpk/edit#gid=0"
     conn = st.experimental_connection("gsheets", type=GSheetsConnection)
-    data = conn.read(spreadsheet=link, worksheet="Bookings")
-    return pd.DataFrame(data)
+    data = conn.read(worksheet="Bookings")
+    names = data["Name"].dropna().to_list()
+    starts = data["Start"].dropna().to_list()
+    ends = data["End"].dropna().to_list()
+    values = {"Name": names, "Start": starts, "End": ends}
+    df = pd.DataFrame(values)
+    return df, conn
 
 
-def book_slot(slot_title, slot_day, slot_start, slot_end, df):
+def book_slot(slot_title, slot_day, slot_start, slot_end, df, conn):
     slot_book = [
         slot_title,
         f"{slot_day}T{slot_start}",
@@ -37,6 +41,10 @@ def book_slot(slot_title, slot_day, slot_start, slot_end, df):
     ]
     df.loc[len(df)] = slot_book
     st.write(df)
+    conn.update(worksheet="Bookings", data=df)
+    st.cache_data.clear()
+    st.experimental_rerun()
+
     # csv_url = st.secrets["public_gsheets_url"].replace("/edit#gid=", "/export?format=csv&gid=")
     # st.write(csv_url)
     #df.to_csv(st.secrets["public_gsheets_url"])
@@ -62,12 +70,12 @@ calendar_options = {
 }
 
 
-df = load_data()
+df, conn = load_data()
 # for row in df.itertuples():
 #     st.write(f"{row.Name} has a :{row.Start}:")
 st.write(df)
-calendar = calendar(options=calendar_options)
-#calendar = calendar(events=read_booking(df), options=calendar_options)
+# calendar = calendar(options=calendar_options)
+calendar = calendar(events=read_booking(df), options=calendar_options)
 
 st.write(calendar)
 
@@ -89,4 +97,4 @@ with st.form(key="new_book"):
     booking = st.form_submit_button("Book")
 
 if booking:
-    book_slot(slot_title, slot_day, slot_start, slot_end, df)
+    book_slot(slot_title, slot_day, slot_start, slot_end, df, conn)
