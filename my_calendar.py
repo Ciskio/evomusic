@@ -1,11 +1,12 @@
 import pandas as pd
 import datetime
+import numpy as np
 
 import streamlit as st
 from streamlit_calendar import calendar
 from streamlit_gsheets import GSheetsConnection
 
-TODAY = datetime.date.today()
+
 
 # Read in data from the Google Sheet.
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
@@ -21,8 +22,9 @@ def load_data():
     return df, conn
 
 def clean_db_old(df):
+    now = np.datetime64('now')
     df["End"] = pd.to_datetime(df["End"])
-    new_df = df[~(df['End'] > TODAY)]
+    new_df = df[~(df['End'] > now)]
     return new_df
 
 def read_booking(df):
@@ -60,8 +62,8 @@ def check_past(input_day):
     :return: True if the tested day is in the past, False otherwise
     """
     # passed_day = datetime.datetime.strptime(f"{input_day[:4]}-{input_day[5:7]}-{input_day[8:]}", "%Y/%m/%d").date()
-
-    if TODAY > input_day:
+    today = datetime.date.today()
+    if today > input_day:
         return True
     return False
 
