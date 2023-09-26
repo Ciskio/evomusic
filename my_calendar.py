@@ -38,7 +38,7 @@ def book_slot(slot_title, slot_day, slot_start, slot_end, df):
     st.write(df)
     # csv_url = st.secrets["public_gsheets_url"].replace("/edit#gid=", "/export?format=csv&gid=")
     # st.write(csv_url)
-    df.to_csv(st.secrets["public_gsheets_url"])
+    #df.to_csv(st.secrets["public_gsheets_url"])
 
 
 calendar_options = {
