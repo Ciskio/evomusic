@@ -23,6 +23,7 @@ def read_booking(df):
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
 @st.cache_data(ttl=60)
 def load_data():
+    link = "https://docs.google.com/spreadsheets/d/1wQ4fVvqXCGZKt_WeJ5uAfGakNLVAiO_Qs2Km1PPXvpk/edit#gid=0"
     conn = st.experimental_connection("gsheets", type=GSheetsConnection)
     data = conn.read(spreadsheet="Evomusic", worksheet="Bookings")
     return data
