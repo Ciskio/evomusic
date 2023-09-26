@@ -22,7 +22,7 @@ def read_booking(df):
 # Read in data from the Google Sheet.
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
 @st.cache_data(ttl=60)
-def load_data(sheets_url):
+def load_data():
     conn = st.experimental_connection("gsheets", type=GSheetsConnection)
     data = conn.read(spreadsheet="Evomusic")
     return data
@@ -61,7 +61,7 @@ calendar_options = {
 }
 
 
-df = load_data(st.secrets["public_gsheets_url"])
+df = load_data()
 # for row in df.itertuples():
 #     st.write(f"{row.Name} has a :{row.Start}:")
 
