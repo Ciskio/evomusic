@@ -1,2 +1,2 @@
 streamlit_calendar
-gsheetsdb
+streamlit_gsheets
