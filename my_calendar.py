@@ -66,7 +66,9 @@ df = load_data()
 # for row in df.itertuples():
 #     st.write(f"{row.Name} has a :{row.Start}:")
 st.write(df)
-calendar = calendar(events=read_booking(df), options=calendar_options)
+calendar = calendar(options=calendar_options)
+#calendar = calendar(events=read_booking(df), options=calendar_options)
+
 st.write(calendar)
 
 
